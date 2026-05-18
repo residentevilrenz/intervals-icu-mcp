@@ -6,13 +6,33 @@ across all MCP tools. All tools return JSON with a standard structure:
 {
     "data": {...},           # Main data payload
     "analysis": {...},       # Optional insights and computed metrics
-    "metadata": {...}        # Query metadata, timestamps, includes
+    "metadata": {...}        # Tool-supplied metadata (e.g. includes, scales)
 }
+
+By default `metadata` only contains fields that individual tools attach. Set
+`INTERVALS_ICU_DEBUG_METADATA=true` (or `1`/`yes`) in the environment to also
+inject `fetched_at` and `query_type` for debugging.
 """
 
+import functools
 import json
+import os
 from datetime import datetime
 from typing import Any, cast
+
+
+@functools.lru_cache(maxsize=1)
+def _debug_metadata_enabled() -> bool:
+    """Whether to include `fetched_at` / `query_type` in responses.
+
+    Read once at startup and cached. Truthy values: ``true``, ``1``, ``yes``
+    (case-insensitive).
+    """
+    return os.getenv("INTERVALS_ICU_DEBUG_METADATA", "").strip().lower() in {
+        "true",
+        "1",
+        "yes",
+    }
 
 
 def _convert_datetimes(obj: Any) -> Any:  # type: ignore[misc]
@@ -69,20 +89,21 @@ class ResponseBuilder:
         Args:
             data: Main data payload
             analysis: Optional analysis and insights
-            metadata: Optional metadata (will be enriched with timestamp)
-            query_type: Optional query type for metadata
+            metadata: Optional tool-supplied metadata
+            query_type: Optional query type label; only surfaced when
+                ``INTERVALS_ICU_DEBUG_METADATA`` is enabled.
 
         Returns:
             JSON string with structure:
             {
                 "data": {...},
                 "analysis": {...},
-                "metadata": {
-                    "fetched_at": "ISO timestamp",
-                    "query_type": "...",
-                    ...
-                }
+                "metadata": {...}
             }
+
+            With ``INTERVALS_ICU_DEBUG_METADATA=true``, metadata is also
+            enriched with ``fetched_at`` (ISO timestamp) and, if provided,
+            ``query_type``.
         """
         # Convert datetime objects to ISO strings
         converted_data = cast(dict[str, Any], _convert_datetimes(data))
@@ -95,12 +116,12 @@ class ResponseBuilder:
         if converted_analysis:
             response["analysis"] = converted_analysis
 
-        # Build metadata with timestamp
         meta = metadata or {}
         converted_meta = cast(dict[str, Any], _convert_datetimes(meta))
-        converted_meta["fetched_at"] = datetime.now().isoformat()
-        if query_type:
-            converted_meta["query_type"] = query_type
+        if _debug_metadata_enabled():
+            converted_meta["fetched_at"] = datetime.now().isoformat()
+            if query_type:
+                converted_meta["query_type"] = query_type
 
         response["metadata"] = converted_meta
 
