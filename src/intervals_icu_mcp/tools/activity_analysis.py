@@ -391,7 +391,7 @@ async def get_power_histogram(
         activity_id: The unique ID of the activity
 
     Returns:
-        JSON string with power distribution bins
+        JSON with `buckets` (each `{power_range: {min_watts, max_watts}, time_seconds}`) and `total_time_seconds`.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -453,7 +453,7 @@ async def get_hr_histogram(
         activity_id: The unique ID of the activity
 
     Returns:
-        JSON string with HR distribution bins
+        JSON with `buckets` (each `{hr_range: {min_bpm, max_bpm}, time_seconds}`) and `total_time_seconds`.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -515,7 +515,7 @@ async def get_pace_histogram(
         activity_id: The unique ID of the activity
 
     Returns:
-        JSON string with pace distribution bins
+        JSON with `buckets` (each `{pace_range: {min, max}, time_seconds}`) and `total_time_seconds`.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -574,7 +574,7 @@ async def get_gap_histogram(
         activity_id: The unique ID of the activity
 
     Returns:
-        JSON string with GAP distribution bins
+        JSON with `buckets` (each `{gap_range: {min, max}, time_seconds}`) and `total_time_seconds`.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
