@@ -30,21 +30,11 @@ async def get_power_curves(
     ] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Get power curve data showing best efforts for various durations.
+    """Fetch the power-vs-duration curve — best (highest) sustained watts across durations from 5s up to 1h, aggregated over the chosen window.
 
-    Analyzes power data across activities to find peak power outputs for
-    different time durations (e.g., 5 seconds, 1 minute, 5 minutes, 20 minutes).
-
-    Useful for tracking performance improvements and identifying strengths/weaknesses
-    across different power duration profiles.
-
-    Args:
-        days_back: Number of days to analyze (overrides time_period)
-        time_period: Time period shorthand - 'week' (7 days), 'month' (30 days),
-                     'year' (365 days), 'all' (all time). Default is 90 days.
-
-    Returns:
-        JSON string with power curve data
+    Use for FTP estimation, peak-power tracking, strengths/weaknesses
+    across duration profiles. For time-in-zone *distribution* within a
+    single activity, use get_power_histogram instead.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")

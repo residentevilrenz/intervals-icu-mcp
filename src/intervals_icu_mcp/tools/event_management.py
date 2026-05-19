@@ -415,20 +415,11 @@ async def delete_event(
     athlete_id: Annotated[str | None, "Athlete ID (for coaches managing multiple athletes)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Delete a calendar event.
+    """Permanently delete ONE calendar event by ID. Destructive — cannot be undone.
 
-    Permanently removes an event from your calendar. This action cannot be undone.
-
-    In `safe` delete mode (the default), past events are refused — only events
-    dated today or later are deletable. The skipped event is reported in the
-    response with its date and a hint pointing the operator to
-    INTERVALS_ICU_DELETE_MODE=full if they need to delete past events.
-
-    Args:
-        event_id: ID of the event to delete
-
-    Returns:
-        JSON string with `deleted` / `skipped` envelope
+    In `safe` delete mode (default), past events are refused and reported
+    in the `skipped` envelope with a hint about INTERVALS_ICU_DELETE_MODE=full.
+    Returns a `deleted` / `skipped` envelope either way.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -596,15 +587,11 @@ async def bulk_delete_events(
     athlete_id: Annotated[str | None, "Athlete ID (for coaches managing multiple athletes)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Delete multiple calendar events in a single operation.
+    """Delete MANY calendar events in a single batch call. Destructive — cannot be undone.
 
-    This is more efficient than deleting events one at a time. Provide a JSON array
-    of event IDs to delete.
-
-    In `safe` delete mode (the default), past events are skipped — the call
-    partitions the input list into deleted (future) and skipped (past or
-    undated) and returns both. INTERVALS_ICU_DELETE_MODE=full disables the
-    partition and deletes everything.
+    In `safe` delete mode (default), the call partitions the input list
+    into `deleted` (future) and `skipped` (past or undated) and returns
+    both. INTERVALS_ICU_DELETE_MODE=full disables the partition.
 
     Args:
         event_ids: JSON array of event IDs (integers)
@@ -784,18 +771,11 @@ async def apply_training_plan(
     athlete_id: Annotated[str | None, "Athlete ID (for coaches managing multiple athletes)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Apply a training plan.
+    """Schedule an entire training plan (workout-library folder) onto the athlete's calendar starting on a chosen date.
 
-    Programmatically applies an entire training plan (workout folders/schedules)
-    directly onto an athlete's calendar.
-
-    Args:
-        folder_id: Folder ID of the training plan
-        start_date_local: Start date in YYYY-MM-DD format
-        extra_workouts_json: Optional JSON string of extra workout objects
-
-    Returns:
-        JSON string with application confirmation
+    Use after get_workout_library to find a plan's folder_id. Different
+    from create_event / bulk_create_events (which build new events) and
+    from duplicate_events (which copies existing).
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")

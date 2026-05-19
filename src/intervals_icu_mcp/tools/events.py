@@ -16,17 +16,11 @@ async def get_calendar_events(
     athlete_id: Annotated[str | None, "Athlete ID (for coaches managing multiple athletes)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Get planned events and workouts from the calendar.
+    """Fetch ALL calendar entries in a date window — workouts, notes, races, goals, life-event blocks.
 
-    Returns calendar events including planned workouts, notes, races, and goals
-    for the specified time period.
-
-    Args:
-        days_ahead: Number of days to look ahead (default 7)
-        days_back: Number of days to look back (default 0)
-
-    Returns:
-        JSON string with calendar events
+    Use for "what's on my calendar?", "show this week", broad calendar
+    queries. For just the planned WORKOUT entries (filtered) use
+    get_upcoming_workouts. For one specific event by ID use get_event.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -162,16 +156,10 @@ async def get_upcoming_workouts(
     athlete_id: Annotated[str | None, "Athlete ID (for coaches managing multiple athletes)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Get upcoming planned workouts from the calendar.
+    """Fetch only the planned WORKOUT entries from the upcoming calendar (filters out notes, races, goals).
 
-    Returns only workout events (filters out notes, races, goals) for the
-    upcoming days. Useful for seeing what training is planned ahead.
-
-    Args:
-        limit: Maximum number of workouts to return (default 7)
-
-    Returns:
-        JSON string with upcoming workouts
+    Use for "what's my next workout?", "what training is planned". For
+    every calendar entry type use get_calendar_events.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -271,17 +259,7 @@ async def get_event(
     athlete_id: Annotated[str | None, "Athlete ID (for coaches managing multiple athletes)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Get detailed information for a specific calendar event.
-
-    Returns complete details for a single event including all metrics, descriptions,
-    and workout structure.
-
-    Args:
-        event_id: The unique ID of the event
-
-    Returns:
-        JSON string with event details
-    """
+    """Fetch ONE specific calendar event by ID — full details including description, workout structure, and metrics."""
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
 

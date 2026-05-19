@@ -363,48 +363,11 @@ async def update_wellness(
     comments: Annotated[str | None, "Comments or notes"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Update wellness data for a specific date.
+    """Upsert wellness data for ONE specific date — creates the record if missing, otherwise updates the fields you pass.
 
-    Updates wellness metrics for the specified date. If a record doesn't exist for
-    that date, it will be created. Only provide the fields you want to update.
-
-    All subjective metrics (fatigue, soreness, stress, mood, motivation, injury) use a 1-5 scale.
-    Set `locked=True` to prevent device sync from overwriting manual entries.
-
-    Args:
-        date: Date in ISO-8601 format (YYYY-MM-DD)
-        weight: Weight in kilograms
-        resting_hr: Resting heart rate in beats per minute
-        hrv: Heart rate variability (rMSSD) in milliseconds
-        sleep_secs: Sleep duration in seconds
-        sleep_quality: Sleep quality rating (1-5, inverted: 1=Great, 5=Poor)
-        fatigue: Fatigue level (1-5)
-        soreness: Muscle soreness level (1-5)
-        stress: Stress level (1-5)
-        mood: Mood rating (1-5)
-        motivation: Motivation level (1-5)
-        injury: Injury severity (1-5: 1=none, 5=severe)
-        readiness: Overall readiness score (0-100)
-        body_fat: Body fat percentage
-        abdomen: Abdominal circumference in cm
-        vo2max: VO2max in ml/kg/min
-        systolic: Systolic blood pressure in mmHg
-        diastolic: Diastolic blood pressure in mmHg
-        spo2: Blood oxygen saturation percentage (SpO2)
-        respiration: Respiration rate in breaths per minute
-        blood_glucose: Blood glucose in mmol/L
-        lactate: Blood lactate in mmol/L
-        menstrual_phase: Menstrual phase string
-        locked: Prevent device sync from overwriting this record
-        calories_consumed: Total calories consumed in kcal
-        carbohydrates: Carbohydrates in grams
-        protein: Protein in grams
-        fat_total: Total fat in grams
-        hydration_liters: Hydration volume in liters
-        comments: Any notes or comments about the day
-
-    Returns:
-        JSON string with updated wellness data
+    Only provided fields are sent. Subjective scales (fatigue, soreness,
+    stress, mood, motivation, injury) are 1-5. Pass `locked=True` to stop
+    device sync from overwriting manual entries.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")

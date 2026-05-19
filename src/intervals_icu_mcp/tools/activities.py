@@ -17,17 +17,11 @@ async def get_recent_activities(
     athlete_id: Annotated[str | None, "Athlete ID (for coaches managing multiple athletes)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Get recent activities for the authenticated athlete.
+    """List the athlete's most recent activities (default last 30 days) — LIGHT summary per item (distance, duration, power, HR, training load).
 
-    Returns a summary of recent activities including key metrics like distance,
-    duration, power, heart rate, and training load.
-
-    Args:
-        limit: Number of activities to fetch (default 30, max 100)
-        days_back: Number of days to look back (default 30)
-
-    Returns:
-        JSON string with activity summaries
+    Use for "what have I done recently?", "show last week's rides". For
+    one specific activity by ID use get_activity_details; to search by
+    name/tag use search_activities.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -309,23 +303,9 @@ async def update_activity(
     perceived_exertion: Annotated[int | None, "RPE rating (1-10 scale)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Update an existing activity's metadata.
+    """Update an existing activity's metadata (name, type, trainer flag, RPE, feel, etc.).
 
-    Modifies one or more fields of an existing activity. Only provide the fields
-    you want to change - other fields will remain unchanged.
-
-    Args:
-        activity_id: The unique ID of the activity to update
-        name: New name for the activity
-        description: New description/notes for the activity
-        activity_type: New activity type (e.g., "Ride", "Run", "Swim")
-        trainer: Whether this was an indoor trainer workout
-        commute: Whether this was a commute
-        feel: Subjective feel rating (1=terrible, 5=great)
-        perceived_exertion: RPE rating (1-10 scale)
-
-    Returns:
-        JSON string with updated activity information
+    Only fields you pass are sent; everything else stays unchanged.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -394,17 +374,7 @@ async def delete_activity(
     activity_id: Annotated[str, "Activity ID to delete"],
     ctx: Context | None = None,
 ) -> str:
-    """Delete an activity permanently.
-
-    Permanently removes an activity from your account. This action cannot be undone.
-    Use with caution.
-
-    Args:
-        activity_id: The unique ID of the activity to delete
-
-    Returns:
-        JSON string with deletion confirmation
-    """
+    """Permanently delete an activity. Destructive — cannot be undone. Only registered when INTERVALS_ICU_DELETE_MODE=full."""
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
 
@@ -497,15 +467,10 @@ async def download_activity_file(
 ) -> str:
     """Download the original activity file.
 
-    Downloads the original file that was uploaded to Intervals.icu (FIT, TCX, or GPX).
-    Can optionally save to a specified path.
-
-    Args:
-        activity_id: The unique ID of the activity
-        output_path: Optional path to save the file (e.g., "/path/to/activity.fit")
-
-    Returns:
-        JSON string with file info and base64-encoded content (if no output_path)
+    Downloads the ORIGINAL uploaded file (FIT, TCX, or GPX — whatever the
+    device produced). Different from download_fit_file (forces FIT conversion)
+    and download_gpx_file (forces GPX conversion). If `output_path` is set
+    the file is saved there; otherwise the response embeds base64 content.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -530,18 +495,7 @@ async def download_fit_file(
     output_path: Annotated[str | None, "Path to save the FIT file (optional)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Download activity as a FIT file.
-
-    Converts and downloads the activity as a FIT (Flexible and Interoperable Data Transfer)
-    file, which is compatible with Garmin and most training platforms.
-
-    Args:
-        activity_id: The unique ID of the activity
-        output_path: Optional path to save the file (e.g., "/path/to/activity.fit")
-
-    Returns:
-        JSON string with file info and base64-encoded content (if no output_path)
-    """
+    """Download activity converted to FIT format (Garmin / most training platforms). Different from download_activity_file (original upload format) and download_gpx_file (GPX format)."""
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
 
@@ -565,18 +519,7 @@ async def download_gpx_file(
     output_path: Annotated[str | None, "Path to save the GPX file (optional)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Download activity as a GPX file.
-
-    Converts and downloads the activity as a GPX (GPS Exchange Format) file,
-    which is compatible with most GPS devices and mapping software.
-
-    Args:
-        activity_id: The unique ID of the activity
-        output_path: Optional path to save the file (e.g., "/path/to/activity.gpx")
-
-    Returns:
-        JSON string with file info and base64-encoded content (if no output_path)
-    """
+    """Download activity converted to GPX format (GPS devices, mapping software). Different from download_activity_file (original upload format) and download_fit_file (FIT format)."""
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
 
@@ -687,18 +630,10 @@ async def get_activities_around(
     count: Annotated[int, "Number of activities before and after"] = 5,
     ctx: Context | None = None,
 ) -> str:
-    """Get activities before and after a specific activity for context.
+    """Fetch the activities chronologically before and after a reference activity (N each side).
 
-    Retrieves activities chronologically surrounding a reference activity.
-    Useful for understanding training context, progression, or finding
-    related workouts.
-
-    Args:
-        activity_id: The ID of the reference activity
-        count: Number of activities to retrieve before and after (default 5)
-
-    Returns:
-        JSON string with activities around the reference activity
+    Use for "what did I do around this race?", training-context queries,
+    progression comparisons.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -795,18 +730,9 @@ async def update_activity_streams(
     format: Annotated[str, "Format of the payload: 'json' or 'csv'"] = "json",
     ctx: Context | None = None,
 ) -> str:
-    """Update streams for the activity.
+    """Upload raw time-series streams (power, HR, cadence, etc.) onto an existing activity. Destructive — overwrites existing stream data.
 
-    Allows uploading raw time-series metrics (power, heart rate, cadence) directly
-    into an existing activity using a JSON or CSV payload.
-
-    Args:
-        activity_id: The unique ID of the activity
-        payload_string: JSON array of stream data or CSV string
-        format: Format of the payload ('json' or 'csv')
-
-    Returns:
-        JSON string with update confirmation
+    Accepts JSON array or CSV. Different from get_activity_streams (READ).
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -852,18 +778,11 @@ async def bulk_create_manual_activities(
     athlete_id: Annotated[str | None, "Athlete ID (for coaches managing multiple athletes)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Create multiple manual activities with upsert on external_id.
+    """Batch-create manual activities (no device upload) with UPSERT on `external_id`.
 
-    Existing activities with matching external_id, created by the same OAuth application
-    are updated. Activities created/updated are returned. Activities with no external_id
-    are always created.
-
-    Args:
-        activities_json: JSON string containing array of activity objects
-        athlete_id: Athlete ID (for coaches managing multiple athletes)
-
-    Returns:
-        JSON string with created/updated activities
+    Existing activities with a matching external_id (set by the same
+    OAuth app) are updated; activities without an external_id are always
+    created new.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")

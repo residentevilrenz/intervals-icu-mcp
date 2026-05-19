@@ -13,14 +13,7 @@ from ..response_builder import ResponseBuilder
 async def get_athlete_profile(
     ctx: Context | None = None,
 ) -> str:
-    """Get the authenticated athlete's profile information.
-
-    Returns athlete profile including personal details, sport settings,
-    and current fitness metrics (CTL, ATL, TSB).
-
-    Returns:
-        JSON string with athlete profile data
-    """
+    """Get the authenticated athlete's profile — personal details, sport settings (FTP/FTHR/pace thresholds per sport), and current CTL/ATL/TSB with form interpretation."""
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
 
@@ -145,18 +138,9 @@ async def get_athlete_profile(
 async def get_fitness_summary(
     ctx: Context | None = None,
 ) -> str:
-    """Get the athlete's current fitness, fatigue, and form metrics.
+    """Get the athlete's current fitness / fatigue / form snapshot — CTL, ATL, TSB, ramp rate, with interpretation and training recommendations.
 
-    Returns a comprehensive summary of training load metrics including:
-    - CTL (Chronic Training Load / Fitness)
-    - ATL (Acute Training Load / Fatigue)
-    - TSB (Training Stress Balance / Form)
-    - Ramp Rate (rate of fitness change)
-
-    Includes interpretations to help understand training status.
-
-    Returns:
-        JSON string with fitness summary and recommendations
+    Use for "how's my form?", "am I overtrained?", training-status checks.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")

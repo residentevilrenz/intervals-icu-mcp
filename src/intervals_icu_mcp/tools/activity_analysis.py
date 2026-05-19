@@ -208,20 +208,11 @@ async def get_best_efforts(
     count: Annotated[int, "Number of efforts to return (default 8)"] = 8,
     ctx: Context | None = None,
 ) -> str:
-    """Get best efforts/peak performances from an activity.
+    """Find the top-N peak efforts WITHIN a single activity for a given stream + target duration or distance.
 
-    Analyzes the activity to find the best performances for a given stream
-    and duration/distance. Requires at least one of duration or distance.
-
-    Args:
-        activity_id: The unique ID of the activity
-        stream: Stream to search (watts, heartrate, pace, etc.)
-        duration: Duration of each effort in seconds
-        distance: Distance of each effort in meters
-        count: Number of efforts to return (default 8)
-
-    Returns:
-        JSON string with best efforts data
+    Different from get_*_curves (which span many activities). Useful for
+    "what was my best 20-min power on this ride?" or "show my top 5k
+    splits in this run." Requires at least one of duration or distance.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -291,20 +282,11 @@ async def search_intervals(
     limit: Annotated[int, "Maximum number of results to return"] = 30,
     ctx: Context | None = None,
 ) -> str:
-    """Search for similar intervals across all activities.
+    """Search intervals ACROSS ALL the athlete's activities (cross-activity).
 
-    Finds intervals matching specific criteria across your activity history.
-    Useful for tracking progress on specific workout types or finding comparable
-    training sessions.
-
-    Args:
-        interval_type: Type of interval (e.g., "WORK", "THRESHOLD", "VO2MAX")
-        min_duration: Minimum interval duration in seconds
-        max_duration: Maximum interval duration in seconds
-        limit: Maximum number of results to return (default 30)
-
-    Returns:
-        JSON string with matching intervals
+    Different from get_activity_intervals (single-activity). Use to track
+    progress on a workout type ("all my threshold intervals over the last
+    year") or find comparable historical sessions.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -361,17 +343,11 @@ async def get_power_histogram(
     activity_id: Annotated[str, "Activity ID to analyze"],
     ctx: Context | None = None,
 ) -> str:
-    """Get power distribution histogram for an activity.
+    """Time-in-zone DISTRIBUTION of power within a single activity (histogram buckets, time per bucket).
 
-    Analyzes how power was distributed across the activity, showing time spent
-    at different power levels. Useful for understanding workout intensity distribution
-    and identifying training zones.
-
-    Args:
-        activity_id: The unique ID of the activity
-
-    Returns:
-        JSON with `buckets` (each `{power_range: {min_watts, max_watts}, time_seconds}`) and `total_time_seconds`.
+    Different from get_power_curves (best efforts across many activities).
+    Use for "how was my workout intensity distributed?", training-zone
+    breakdown.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -423,17 +399,10 @@ async def get_hr_histogram(
     activity_id: Annotated[str, "Activity ID to analyze"],
     ctx: Context | None = None,
 ) -> str:
-    """Get heart rate distribution histogram for an activity.
+    """Time-in-zone DISTRIBUTION of heart rate within a single activity (histogram buckets, time per bucket).
 
-    Analyzes how heart rate was distributed across the activity, showing time spent
-    at different HR levels. Useful for understanding cardiovascular load and
-    training zone distribution.
-
-    Args:
-        activity_id: The unique ID of the activity
-
-    Returns:
-        JSON with `buckets` (each `{hr_range: {min_bpm, max_bpm}, time_seconds}`) and `total_time_seconds`.
+    Different from get_hr_curves (best efforts across many activities).
+    Use for cardiovascular load breakdown and HR-zone time-in-zone.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -485,17 +454,11 @@ async def get_pace_histogram(
     activity_id: Annotated[str, "Activity ID to analyze"],
     ctx: Context | None = None,
 ) -> str:
-    """Get pace distribution histogram for an activity.
+    """Time-in-zone DISTRIBUTION of pace within a single running activity (histogram buckets, time per bucket).
 
-    Analyzes how pace was distributed across the activity, showing time spent
-    at different pace levels. Useful for running activities to understand
-    pace distribution and consistency.
-
-    Args:
-        activity_id: The unique ID of the activity
-
-    Returns:
-        JSON with `buckets` (each `{pace_range: {min, max}, time_seconds}`) and `total_time_seconds`.
+    Different from get_pace_curves (best efforts across many activities).
+    Use for pace-distribution / consistency analysis. For elevation-
+    normalized pace use get_gap_histogram.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -544,17 +507,10 @@ async def get_gap_histogram(
     activity_id: Annotated[str, "Activity ID to analyze"],
     ctx: Context | None = None,
 ) -> str:
-    """Get grade-adjusted pace (GAP) histogram for an activity.
+    """Time-in-zone DISTRIBUTION of grade-adjusted pace (GAP) within a single activity — elevation-normalized.
 
-    Analyzes grade-adjusted pace distribution, which normalizes pace for elevation
-    changes. Useful for trail running to understand true effort distribution
-    independent of terrain.
-
-    Args:
-        activity_id: The unique ID of the activity
-
-    Returns:
-        JSON with `buckets` (each `{gap_range: {min, max}, time_seconds}`) and `total_time_seconds`.
+    Use for trail running where raw pace is misleading. For raw (non-
+    elevation-normalized) pace use get_pace_histogram.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")

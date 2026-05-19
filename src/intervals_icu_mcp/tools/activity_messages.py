@@ -30,21 +30,13 @@ async def get_activity_messages(
     activity_id: Annotated[str, "The Intervals.icu activity ID"],
     ctx: Context | None = None,
 ) -> str:
-    """Read the notes and comments attached to a specific activity.
+    """Read the notes and comments attached to a specific activity (plural = READ).
 
     Use when the user asks: "what did my coach say about that ride?",
-    "show me the comments on yesterday's run", "read my notes on activity
-    X", "any feedback on this workout?". Returns every message on the
-    activity in chronological order, including the author name, content,
-    timestamp, and whether the user has seen it.
-
-    Args:
-        activity_id: The Intervals.icu activity ID (use icu_search_activities
-            or icu_get_recent_activities to find one if you only have a
-            description)
-
-    Returns:
-        JSON string with the list of messages and total count
+    "show me the comments on yesterday's run", "any feedback on this
+    workout?". Returns every message in chronological order with author,
+    content, timestamp, and seen-flag. To POST a new message use
+    icu_add_activity_message (singular = WRITE).
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -74,21 +66,12 @@ async def add_activity_message(
     content: Annotated[str, "Message content (note or comment text)"],
     ctx: Context | None = None,
 ) -> str:
-    """Post a note or comment on a specific activity.
+    """POST a new note or comment on a specific activity (singular = WRITE).
 
     Use when the user wants to leave a note on one of their activities:
     "add a note to this ride that I felt strong", "comment on yesterday's
-    run", "leave a training note saying...". The post is attributed to the
-    authenticated user. Use icu_get_activity_messages first if you need to
-    see existing comments before adding to the thread.
-
-    Args:
-        activity_id: The Intervals.icu activity ID (use icu_search_activities
-            or icu_get_recent_activities to find one)
-        content: The message text to post (cannot be empty)
-
-    Returns:
-        JSON string with the new message ID and confirmation
+    run", "leave a training note saying...". Attributed to the authenticated
+    user. To READ existing notes use icu_get_activity_messages (plural).
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
