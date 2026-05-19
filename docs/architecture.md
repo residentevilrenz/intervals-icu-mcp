@@ -103,11 +103,15 @@ async def tool_name(
             return ResponseBuilder.build_response(
                 data={"key": "value"},
                 analysis={"insights": "..."},
-                query_type="tool_type"
             )
     except ICUAPIError as e:
         return ResponseBuilder.build_error_response(e.message, error_type="api_error")
 ```
+
+By default, the `metadata` block only contains fields a tool explicitly attaches.
+Set `INTERVALS_ICU_DEBUG_METADATA=true` to additionally inject `fetched_at` and
+(if passed) `query_type` — useful for tracing but otherwise noise the LLM
+doesn't read.
 
 ## Error Handling
 
