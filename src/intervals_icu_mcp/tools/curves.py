@@ -50,21 +50,11 @@ async def get_hr_curves(
     ] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Get heart rate curve data showing best efforts for various durations.
+    """Fetch the HR-vs-duration curve — best (highest) sustained HR across durations from 5s up to 1h, aggregated over the chosen window.
 
-    Analyzes heart rate data across activities to find peak heart rate outputs for
-    different time durations (e.g., 5 seconds, 1 minute, 5 minutes, 20 minutes).
-
-    Useful for tracking cardiovascular fitness improvements and identifying HR zones
-    across different effort durations.
-
-    Args:
-        days_back: Number of days to analyze (overrides time_period)
-        time_period: Time period shorthand - 'week' (7 days), 'month' (30 days),
-                     'year' (365 days), 'all' (all time). Default is 90 days.
-
-    Returns:
-        JSON string with HR curve data
+    Use for cardiovascular-fitness trends and HR-zone calibration. For
+    time-in-zone *distribution* within a single activity, use
+    get_hr_histogram instead.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -191,22 +181,12 @@ async def get_pace_curves(
     use_gap: Annotated[bool, "Use Grade Adjusted Pace (GAP) for running"] = False,
     ctx: Context | None = None,
 ) -> str:
-    """Get pace curve data showing best efforts for various durations.
+    """Fetch the pace-vs-duration curve — best (fastest) sustained pace across durations from 5s up to 1h, aggregated over the chosen window.
 
-    Analyzes pace data across running/swimming activities to find best pace outputs for
-    different time durations (e.g., 400m, 1km, 5km, 10km).
-
-    Useful for tracking running fitness and race predictions. Can use Grade Adjusted Pace
-    (GAP) to normalize for hills.
-
-    Args:
-        days_back: Number of days to analyze (overrides time_period)
-        time_period: Time period shorthand - 'week' (7 days), 'month' (30 days),
-                     'year' (365 days), 'all' (all time). Default is 90 days.
-        use_gap: Use Grade Adjusted Pace (GAP) for running to account for hills
-
-    Returns:
-        JSON string with pace curve data
+    Use for run/swim fitness trends and race-time predictions. Pass
+    `use_gap=True` to normalize for hills via Grade-Adjusted Pace. For
+    time-in-zone *distribution* within a single activity, use
+    get_pace_histogram (or get_gap_histogram) instead.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")

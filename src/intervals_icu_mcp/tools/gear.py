@@ -12,11 +12,7 @@ from ..response_builder import ResponseBuilder
 async def get_gear_list(
     ctx: Context | None = None,
 ) -> str:
-    """Get all gear items with usage statistics and maintenance reminders.
-
-    Returns:
-        Formatted list of all gear with details, usage stats, and reminders
-    """
+    """List all gear items with usage stats (distance, time, activity count) and maintenance reminders."""
     config = load_config()
     if not validate_credentials(config):
         return (
@@ -118,19 +114,7 @@ async def create_gear(
     primary: Annotated[bool, "Whether this is the primary gear of this type"] = False,
     ctx: Context | None = None,
 ) -> str:
-    """Create a new gear item for tracking equipment usage and maintenance.
-
-    Args:
-        name: Name of the gear item (e.g., "Road Bike", "Running Shoes")
-        gear_type: Type of gear - BIKE, SHOE, TRAINER, WETSUIT, or OTHER
-        brand: Brand name (optional)
-        model: Model name (optional)
-        active: Whether this gear is actively used (default: True)
-        primary: Whether this is the primary gear of this type (default: False)
-
-    Returns:
-        Created gear item with ID and initial stats
-    """
+    """Create a new gear item for tracking equipment usage and maintenance (bikes, shoes, trainers, etc.)."""
     config = load_config()
     if not validate_credentials(config):
         return (
@@ -187,20 +171,7 @@ async def update_gear(
     primary: Annotated[bool | None, "Whether this is the primary gear of this type"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Update an existing gear item.
-
-    Args:
-        gear_id: ID of the gear item to update
-        name: Updated name (optional)
-        gear_type: Updated type (optional)
-        brand: Updated brand (optional)
-        model: Updated model (optional)
-        active: Updated active status (optional)
-        primary: Updated primary status (optional)
-
-    Returns:
-        Updated gear item details
-    """
+    """Update an existing gear item. Only fields you pass are sent."""
     config = load_config()
     if not validate_credentials(config):
         return (
@@ -272,17 +243,7 @@ async def delete_gear(
     gear_id: Annotated[str, "ID of the gear item to delete"],
     ctx: Context | None = None,
 ) -> str:
-    """Delete a gear item permanently.
-
-    This will remove the gear item and all associated maintenance reminders.
-    Activities that used this gear will not be affected.
-
-    Args:
-        gear_id: ID of the gear item to delete
-
-    Returns:
-        Deletion confirmation
-    """
+    """Permanently delete a gear item and its maintenance reminders. Activities that used this gear are not affected."""
     config = load_config()
     if not validate_credentials(config):
         return (
@@ -313,20 +274,7 @@ async def create_gear_reminder(
     time_alert: Annotated[int | None, "Alert every N hours (e.g., 100 for every 100 hours)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Create a maintenance reminder for a gear item.
-
-    Reminders can be based on distance, time, or both. When the threshold is reached,
-    the reminder will be marked as due.
-
-    Args:
-        gear_id: ID of the gear item
-        text: Reminder text describing the maintenance task
-        distance_alert: Alert every N kilometers (optional)
-        time_alert: Alert every N hours (optional)
-
-    Returns:
-        Created reminder details
-    """
+    """Create a maintenance reminder for a gear item, triggered by distance, time, or both."""
     config = load_config()
     if not validate_credentials(config):
         return (
@@ -386,18 +334,7 @@ async def update_gear_reminder(
     time_alert: Annotated[int | None, "Updated time alert in hours"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Update an existing gear maintenance reminder.
-
-    Args:
-        gear_id: ID of the gear item
-        reminder_id: ID of the reminder to update
-        text: Updated reminder text (optional)
-        distance_alert: Updated distance alert in kilometers (optional)
-        time_alert: Updated time alert in hours (optional)
-
-    Returns:
-        Updated reminder details
-    """
+    """Update an existing gear maintenance reminder. Only fields you pass are sent."""
     config = load_config()
     if not validate_credentials(config):
         return (

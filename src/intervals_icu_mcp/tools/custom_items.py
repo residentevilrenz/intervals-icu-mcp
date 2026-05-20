@@ -126,19 +126,11 @@ async def get_custom_item(
     athlete_id: Annotated[str | None, "Athlete ID (for coaches managing multiple athletes)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Fetch the full configuration of one of the user's custom additions.
+    """Fetch the full configuration of ONE custom addition by ID.
 
-    Use this AFTER icu_get_custom_items has returned an ID, when the user
-    wants to inspect a specific custom chart/field/zone/panel in detail
-    (the `content` field carries the full configuration which the list
-    endpoint also returns but is easier to focus on here).
-
-    Args:
-        item_id: Custom item ID (from icu_get_custom_items)
-        athlete_id: Athlete ID (uses configured default if not provided)
-
-    Returns:
-        JSON string with the custom item details including its `content` config
+    Use AFTER icu_get_custom_items has returned an ID when the user wants
+    to inspect a specific chart/field/zone/panel — the `content` field
+    here is the same as in the list, just focused on one item.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -235,7 +227,7 @@ async def create_custom_item(
 async def update_custom_item(
     item_id: Annotated[int, "Custom item ID to update"],
     name: Annotated[str | None, "Updated name"] = None,
-    item_type: Annotated[str | None, "Updated type (see create_custom_item for values)"] = None,
+    item_type: Annotated[str | None, "Updated type (see icu_create_custom_item for values)"] = None,
     description: Annotated[str | None, "Updated description"] = None,
     content: Annotated[
         dict[str, Any] | None,
@@ -303,20 +295,11 @@ async def delete_custom_item(
     athlete_id: Annotated[str | None, "Athlete ID (for coaches managing multiple athletes)"] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Permanently remove one of the user's custom additions.
+    """Permanently remove one of the user's custom additions. Destructive — cannot be undone.
 
     Use when the user says "delete my custom field for X", "remove that
-    chart from my dashboard", "drop the custom zones I made last week".
-    You usually need icu_get_custom_items first to find the right `item_id`.
-    This is destructive and cannot be undone — confirm with the user before
-    calling if you are unsure.
-
-    Args:
-        item_id: Custom item ID (from icu_get_custom_items)
-        athlete_id: Athlete ID (uses configured default if not provided)
-
-    Returns:
-        JSON string confirming deletion
+    chart". Usually need icu_get_custom_items first to find the right
+    `item_id`. Confirm with the user before calling if unsure.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")

@@ -12,11 +12,7 @@ from ..response_builder import ResponseBuilder
 async def get_sport_settings(
     ctx: Context | None = None,
 ) -> str:
-    """Get all sport-specific settings (FTP, FTHR, pace thresholds, zones).
-
-    Returns:
-        Formatted list of sport settings with thresholds and zones
-    """
+    """Get all per-sport thresholds — FTP (cycling watts), FTHR (heart rate), pace threshold (running), swim threshold."""
     config = load_config()
     if not validate_credentials(config):
         return (
@@ -88,18 +84,7 @@ async def update_sport_settings(
     ] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Update sport-specific settings (FTP, FTHR, pace thresholds).
-
-    Args:
-        sport_id: ID of the sport settings to update
-        ftp: Functional Threshold Power in watts (optional)
-        fthr: Functional Threshold Heart Rate in bpm (optional)
-        pace_threshold: Threshold pace in min/km (optional)
-        swim_threshold: Swim threshold in min/100m (optional)
-
-    Returns:
-        Updated sport settings
-    """
+    """Update an existing per-sport threshold record (FTP/FTHR/pace/swim). Only fields you pass are sent."""
     config = load_config()
     if not validate_credentials(config):
         return (
@@ -167,17 +152,10 @@ async def apply_sport_settings(
     ] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Apply sport settings (zones, thresholds) to historical activities.
+    """Recompute training load, zones, and derived metrics on HISTORICAL activities using the current sport settings.
 
-    This recalculates training load, zones, and other derived metrics for activities
-    based on the current sport settings.
-
-    Args:
-        sport_id: ID of the sport settings to apply
-        oldest_date: Oldest date to apply settings to (optional, defaults to all)
-
-    Returns:
-        Result of applying settings
+    Different from update_sport_settings (which just stores new values).
+    Use after changing FTP/FTHR/pace to backfill chart math.
     """
     config = load_config()
     if not validate_credentials(config):
@@ -215,18 +193,7 @@ async def create_sport_settings(
     ] = None,
     ctx: Context | None = None,
 ) -> str:
-    """Create new sport-specific settings.
-
-    Args:
-        sport_type: Type of sport (e.g., 'Ride', 'Run', 'Swim')
-        ftp: Functional Threshold Power in watts (optional)
-        fthr: Functional Threshold Heart Rate in bpm (optional)
-        pace_threshold: Threshold pace in min/km (optional)
-        swim_threshold: Swim threshold in min/100m (optional)
-
-    Returns:
-        Created sport settings
-    """
+    """Create new per-sport threshold record (FTP/FTHR/pace/swim) for a sport that doesn't have one yet."""
     config = load_config()
     if not validate_credentials(config):
         return (
@@ -286,14 +253,7 @@ async def delete_sport_settings(
     sport_id: Annotated[int, "ID of the sport settings to delete"],
     ctx: Context | None = None,
 ) -> str:
-    """Delete sport-specific settings.
-
-    Args:
-        sport_id: ID of the sport settings to delete
-
-    Returns:
-        Deletion confirmation
-    """
+    """Permanently delete a per-sport threshold record. Destructive — affects historical chart math; only registered when INTERVALS_ICU_DELETE_MODE=full."""
     config = load_config()
     if not validate_credentials(config):
         return (

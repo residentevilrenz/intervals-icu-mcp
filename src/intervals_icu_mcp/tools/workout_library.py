@@ -12,15 +12,10 @@ from ..response_builder import ResponseBuilder
 async def get_workout_library(
     ctx: Context | None = None,
 ) -> str:
-    """Get workout library folders and training plans.
+    """List all workout-library folders + training plans the athlete has access to (personal, shared, and followed plans).
 
-    Returns all workout folders and training plans available to you, including
-    your personal workouts, shared workouts, and any training plans you follow.
-
-    Each folder contains structured workouts that can be applied to your calendar.
-
-    Returns:
-        JSON string with workout folders/plans
+    Each folder ID can be passed to icu_get_workouts_in_folder to see its
+    contents, or to icu_apply_training_plan to schedule it onto the calendar.
     """
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
@@ -95,17 +90,7 @@ async def get_workouts_in_folder(
     folder_id: Annotated[int, "Folder ID to get workouts from"],
     ctx: Context | None = None,
 ) -> str:
-    """Get all workouts in a specific folder or training plan.
-
-    Returns detailed information about all workouts stored in a folder,
-    including their structure, intensity, and training load.
-
-    Args:
-        folder_id: ID of the folder to browse
-
-    Returns:
-        JSON string with workout details
-    """
+    """List the workouts stored in one specific library folder or training plan — name, type, structure, training load, intensity factor."""
     assert ctx is not None
     config: ICUConfig = await ctx.get_state("config")
 
