@@ -41,24 +41,40 @@ awk '/^## \[3\.0\.0\]/{flag=1; next} /^## \[/{flag=0} flag' CHANGELOG.md
 
 Save the extracted body to a temp file (e.g. `/tmp/release-notes-X.Y.Z.md`).
 
-### 2. Polish for GitHub Releases UI (lightweight)
+### 2. Reshape into the project's narrative style
 
-Apply these adjustments to the temp file — do NOT change the CHANGELOG.md itself:
+**Critical:** the release notes are NOT a copy of the CHANGELOG section. The CHANGELOG is the exhaustive source-of-truth; the release body is a curated headline version. Past releases in this repo (v2.0.0, v1.3.0, v1.2.0) follow a narrative style — read 1-2 of them before drafting to anchor on the existing voice:
 
-- **Add a TL;DR callout box at the top** if the release ships measured metrics or a headline number. Use GitHub's blockquote callout syntax:
+```bash
+gh release view vPREVIOUS --json body --jq .body
+```
+
+Adopt these conventions:
+
+- **Title has a tagline:** `vX.Y.Z – Headline Theme One & Headline Theme Two` (not plain `vX.Y.Z`). Same theme(s) you'd put in a tweet.
+- **Body uses narrative section headers**, not CHANGELOG-style category buckets. Examples from past releases: `## New features`, `## Improvements`, `## Notes`, or headline-named sections like `## Delete Safety Mode`. **DO NOT use `### Added / ### Fixed / ### Changed`** — that's CHANGELOG style; the release notes are different.
+- **Body is shorter than the CHANGELOG section.** Aim for ~50-70% of the CHANGELOG content, focused on what's user-visible and headline-worthy.
+- **Top callout (`> [!NOTE]`) only when there's a measured headline number** — token savings, accuracy gain, perf improvement. Skip for routine releases.
+- **Inline upgrade prose** for breaking changes — one or two sentences, no diff blocks. Pattern from v2.0.0: *"Upgrading from 1.x: \<thing> no longer \<behavior>. Set \<env var> to restore."* For multiple breaking changes, a `## Upgrading from vX.Y` heading with prose paragraphs (NOT diff snippets unless the consumer audience is parsing-heavy — see below).
+- **Single Full-Changelog comparison link at the bottom**, single line:
   ```markdown
-  > [!NOTE]
-  > **v3.0.0 in one line:** ~3,300-3,500 fewer tokens per session and routing accuracy 80% → 86% on Haiku 4.5.
+  **Full Changelog:** https://github.com/<owner>/<repo>/compare/v<PREVIOUS>...v<CURRENT>
   ```
-- **Always add a "PRs in this release" section at the bottom** linking the merged PRs. Generate it from git log:
-  ```bash
-  git log v<PREVIOUS_VERSION>..v<CURRENT_VERSION> --grep '^Merge pull request' --pretty='- %s' | sed 's/Merge pull request #\([0-9]*\) from .*/#\1/'
-  ```
-  Manually verify the list before pasting — `git log` sometimes catches noise.
-- **For breaking-change releases (major version bump), add a "Migration from vX.Y" section** below the standard CHANGELOG content. List each breaking change with a one-liner code-snippet showing the before/after shape. Reference the relevant CHANGELOG bullet rather than re-explaining the whole change.
+  This replaces a hand-curated PR list. Don't list PRs unless the user explicitly asks for it.
+
+**MCP-specific framing for response-shape changes:**
+
+This project's CLAUDE.md treats response-shape changes as breaking → major bump. Honor that. But the *user impact* in MCP context is smaller than in SDK context:
+- MCP responses are consumed by LLMs that rephrase into natural language.
+- Programmatic parsers (`response["data"]["field"]`) are rare in MCP usage.
+- A field rename usually doesn't break user-visible behavior; the LLM adapts.
+
+So when a release breaks response shape, the release-notes treatment should be proportional to the actual user impact: **one paragraph of inline upgrade prose, not an SDK-style Migration section with before/after diff blocks**. Diff blocks are for projects where consumers write typed parsing code; they're overkill here.
 
 Don't:
-- Rewrite the CHANGELOG content into marketing prose. The CHANGELOG is the source of truth; the release notes mirror it.
+- Rewrite the CHANGELOG verbatim. The CHANGELOG is comprehensive; the release notes are curated.
+- Use CHANGELOG section headings (`### Added`, etc.) — that's the wrong genre.
+- Add diff-snippet Migration sections for MCP response-shape changes — overkill for the audience.
 - Add emojis unless the user explicitly asks for them (per project convention).
 - Include co-author lines or AI attribution (per [feedback_commits.md] memory).
 
@@ -75,7 +91,7 @@ git push origin vX.Y.Z
 
 # Create the GitHub Release using the polished notes file
 # This is what triggers publish.yml → PyPI + MCP Registry
-gh release create vX.Y.Z --title "vX.Y.Z" --notes-file /tmp/release-notes-X.Y.Z.md
+gh release create vX.Y.Z --title "vX.Y.Z – <tagline>" --notes-file /tmp/release-notes-X.Y.Z.md
 ```
 
 Do NOT use `--generate-notes` — that uses GitHub's auto-generated PR/commit list, which is noisier than what we just polished.
@@ -109,6 +125,6 @@ Report status. If it fails, surface the failure and stop — do not retry withou
 The release body should answer three questions for a reader scanning the Releases tab:
 1. **What changed at a glance?** — the TL;DR callout.
 2. **What do I need to know to upgrade?** — the Changed (breaking) bullets + Migration section.
-3. **Where did this come from?** — the PRs section.
+3. **Where did this come from?** — the Full Changelog comparison link.
 
-If a reader can answer those without clicking into the CHANGELOG, the polish is sufficient.
+If a reader can answer those without clicking into the CHANGELOG, the polish is sufficient. Avoid duplicating the CHANGELOG into a verbose PR list at the bottom — the comparison link is enough.
