@@ -14,7 +14,7 @@ that preserve the information (key renames, restructuring, added fields) ship in
 clients. (Releases up to and including 4.0.0 treated any response-shape change as
 breaking; this narrower contract applies from the next release onward.)
 
-## [Unreleased]
+## [5.1.0] — 2026-09-16
 
 ### Added
 - The workout library became writable. `icu_create_workout`, `icu_update_workout`, and `icu_delete_workout` turn what was a two-tool read-only browser into a full CRUD surface, so a model can build and maintain the reusable templates that `icu_apply_training_plan` schedules instead of only listing ones the athlete made by hand in the web UI. The write tools reuse `icu_create_event`'s vocabulary — `workout_type`, `duration_seconds`, `distance_meters`, `training_load` — and translate to the API's `type` / `moving_time` / `distance` / `icu_training_load` at the boundary, so the library tools and the event tools present one set of field names rather than the two undocumented vocabularies that 5.0.0 spent a major release collapsing. `icu_update_workout` sends only the fields provided, and both tools take an optional plan `day` (the offset a workout sits on inside a `PLAN`), which `icu_get_workouts_in_folder` now returns. `icu_delete_workout` registers in `safe` as well as `full`: a library workout is a reusable template, so deleting one leaves calendar events created from it — and every recorded activity — untouched, and the template can be rebuilt from its workout text. That is the same low-stakes profile gear already had, and it is why the default mode gained three tools rather than two. Contributed by @russellmays (#132).
